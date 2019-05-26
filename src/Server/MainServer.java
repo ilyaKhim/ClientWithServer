@@ -13,7 +13,7 @@ public class MainServer {
         Socket socket = null;
         clients = new Vector<>();
         try {
-            server = new ServerSocket(8100);
+            server = new ServerSocket(8100, 10);
             System.out.println("Сервер запущен");
 
             while(true) {
