@@ -50,6 +50,7 @@ public class ClientHandler {
                        } catch (IOException e){
                            e.printStackTrace();
                        }
+                       server.unsubscribe(ClientHandler.this);
 
                    }
                 }

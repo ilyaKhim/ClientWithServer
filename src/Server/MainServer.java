@@ -19,22 +19,32 @@ public class MainServer {
             while(true) {
                 socket = server.accept();
                 System.out.println("Клиент подключился");
-                clients.add(new ClientHandler(socket, this));
+                subscribe(new ClientHandler(socket, this));
             }
         } catch (IOException e){
             e.printStackTrace();
         } finally {
             try{
                 socket.close();
+
             } catch (IOException e){
                 e.printStackTrace();
             }
+
             try{
                 server.close();
             } catch (IOException e){
                 e.printStackTrace();
             }
         }
+    }
+
+    public void subscribe(ClientHandler client){
+        clients.add(client);
+    }
+
+    public void unsubscribe(ClientHandler client){
+        clients.remove(client);
     }
 
     public void broadcastMsg(String msg){
