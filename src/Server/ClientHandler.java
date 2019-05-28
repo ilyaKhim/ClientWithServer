@@ -1,5 +1,6 @@
 package Server;
 
+import Client.Controller;
 import sun.applet.Main;
 
 import java.io.DataInputStream;
@@ -13,6 +14,7 @@ public class ClientHandler {
     private DataOutputStream out;
     private Socket socket;
     private MainServer server;
+    public String nick;
 
     public ClientHandler(Socket socket, MainServer server){
         try{
@@ -24,35 +26,53 @@ public class ClientHandler {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                   try{
-                       while (true){
-                           String str = in.readUTF();
-                           if(str.equals("/end")){
-                               break;
-                           }
-                           server.broadcastMsg("Client: " + str);
-                       }
-                   } catch (IOException e){
-                       e.printStackTrace();
-                   } finally {
-                       try{
-                           in.close();
-                       } catch (IOException e){
-                           e.printStackTrace();
-                       }
-                       try {
-                           out.close();
-                       } catch (IOException e){
-                           e.printStackTrace();
-                       }
-                       try {
-                           socket.close();
-                       } catch (IOException e){
-                           e.printStackTrace();
-                       }
-                       server.unsubscribe(ClientHandler.this);
+                    try{
+                        while (true){
+                            String str = in.readUTF();
+                            if(str.startsWith("/auth")){
+                                String[] tokens = str.split(" ");
+                                String newNick = AuthService.getNiceByLoginAndPass(tokens[1], tokens[2]);
+                                if(newNick != null){
+                                    sendMsg("/authok");
+                                    nick = newNick;
+                                    server.subscribe(ClientHandler.this);
+                                    break;
+                                } else {
+                                    sendMsg("Неверный логин/пароль");
+                                }
+                            }
 
-                   }
+                        }
+                        while (true){
+                            String str = in.readUTF();
+                            if(str.equals("/end")){
+                                out.writeUTF("/serverClosed");
+                                break;
+                            }
+                            server.broadcastMsg("Client "+ nick+ ": " + str);
+
+                        }
+                    } catch (IOException e){
+                        e.printStackTrace();
+                    } finally {
+                        try{
+                            in.close();
+                        } catch (IOException e){
+                            e.printStackTrace();
+                        }
+                        try {
+                            out.close();
+                        } catch (IOException e){
+                            e.printStackTrace();
+                        }
+                        try {
+                            socket.close();
+                        } catch (IOException e){
+                            e.printStackTrace();
+                        }
+                        server.unsubscribe(ClientHandler.this);
+
+                    }
                 }
             }).start();
         } catch (IOException e){

@@ -3,16 +3,20 @@ package Server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.Vector;
 
 public class MainServer {
     private Vector<ClientHandler> clients;
 
-    public MainServer(){
+    public MainServer() throws SQLException {
         ServerSocket server = null;
         Socket socket = null;
         clients = new Vector<>();
         try {
+            AuthService.connect();
+
+//            System.out.println(AuthService.getNiceByLoginAndPass("login1", "pass1"));
             server = new ServerSocket(8100, 10);
             System.out.println("Сервер запущен");
 
@@ -36,6 +40,7 @@ public class MainServer {
             } catch (IOException e){
                 e.printStackTrace();
             }
+            AuthService.disconnect();
         }
     }
 
