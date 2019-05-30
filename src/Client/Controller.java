@@ -1,5 +1,6 @@
 package Client;
 
+import Server.ClientHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
@@ -40,10 +41,12 @@ public class Controller  {
     PasswordField passField;
 
 
+
+
     private boolean isAuthorized;
 
     final String IP_ADRESS = "localhost";
-    final int PORT = 8100;
+    final int PORT = 8001;
 
 
     public void setAuthorized(boolean isAuthorized){
@@ -94,7 +97,8 @@ public class Controller  {
                             if (str.equals("/serverClosed")){
                                 break;
                             }
-                            textArea.appendText(str+"\n");
+
+                            else textArea.appendText(str+"\n");
                         }
                     } catch (IOException e){
                         e.printStackTrace();
@@ -125,10 +129,13 @@ public class Controller  {
     }
 
     public void sendMsg(){
-        try{
+        try {
             out.writeUTF(textField.getText());
             textField.clear();
             textField.requestFocus();
+        } catch (RuntimeException e){
+            e.printStackTrace();
+
         } catch (IOException e){
             e.printStackTrace();
         }

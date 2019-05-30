@@ -1,7 +1,7 @@
 package Server;
 
-import Client.Controller;
-import sun.applet.Main;
+import Client.Main;
+import Server.MainServer.*;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -32,24 +32,37 @@ public class ClientHandler {
                             if(str.startsWith("/auth")){
                                 String[] tokens = str.split(" ");
                                 String newNick = AuthService.getNiceByLoginAndPass(tokens[1], tokens[2]);
-                                if(newNick != null){
+                                boolean authStatus = AuthService.isAlreadyAuth(tokens[1], tokens[2]);
+                                if(newNick != null && authStatus == false){
                                     sendMsg("/authok");
                                     nick = newNick;
+                                    setNick(newNick);
                                     server.subscribe(ClientHandler.this);
+                                    AuthService.connectUser(nick);
                                     break;
-                                } else {
+                                } else if (newNick == null){
                                     sendMsg("Неверный логин/пароль");
+                                } else if (authStatus == true){
+                                    sendMsg("Пользователь уже авторизован в системе");
                                 }
                             }
 
                         }
                         while (true){
                             String str = in.readUTF();
+//                            getNick();
                             if(str.equals("/end")){
                                 out.writeUTF("/serverClosed");
                                 break;
                             }
-                            server.broadcastMsg("Client "+ nick+ ": " + str);
+                            if(str.startsWith("/w ")){
+                                String[] temp = str.split(" ");
+                                String tempNick = temp[1];
+
+                                server.privateMsg(str, nick, tempNick);
+                            }
+                            else server.broadcastMsg("Client "+ nick+ ": " + str);
+
 
                         }
                     } catch (IOException e){
@@ -71,6 +84,7 @@ public class ClientHandler {
                             e.printStackTrace();
                         }
                         server.unsubscribe(ClientHandler.this);
+                        AuthService.disconnectUser(nick);
 
                     }
                 }
@@ -79,9 +93,13 @@ public class ClientHandler {
             e.printStackTrace();
         }
     }
+    public void setNick(String nick){
+        this.nick = nick;
+    }
 
-
-
+    public  String getNick(){
+        return nick;
+    }
 
 
     public void sendMsg(String msg){
@@ -91,4 +109,7 @@ public class ClientHandler {
             e.printStackTrace();
         }
     }
+
+
+
 }
