@@ -1,6 +1,8 @@
 package Server;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AuthService {
     private static Connection connection;
@@ -30,6 +32,34 @@ public class AuthService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static String getBlByNick(String nick){
+        String sql = String.format("SELECT bl FROM main where nickname = '%s'",nick);
+        try{
+            ResultSet rs = stat.executeQuery(sql);
+            if(rs.next()){
+                return rs.getString("bl");
+
+            }
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static void addToBl(String nick, List<String> bl) {
+        String nickToBl = "";
+        for(String s: bl){
+            nickToBl+=s+" ";
+        }
+        String sql = String.format("UPDATE main SET bl = '%s ' where nickname = '%s'", nickToBl, nick);
+        try {
+
+            stat.executeUpdate(sql);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void connectUser(String nick){

@@ -4,11 +4,14 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 public class MainServer {
     private Vector<ClientHandler> clients;
+
 
 //    public  Vector<ClientHandler> getClients(){
 //        return clients;
@@ -58,26 +61,30 @@ public class MainServer {
         clients.remove(client);
     }
 
-    public void broadcastMsg(String msg) {
+    public void broadcastMsg(ClientHandler from,String msg) {
         for (ClientHandler o : clients) {
-            o.sendMsg(msg);
+            if(!o.checkForBl(from.getNick()))
+                o.sendMsg(msg);
+
         }
     }
 
-    public void privateMsg(String msg, String nickFrom, String nickDest) {
+
+
+    public void privateMsg(String msg, ClientHandler from, String nickDest) {
         String message[] = msg.split(" ", 3); // разбил, чтобы можно было вставить двоеточие
         for (ClientHandler c : clients) {
-            if (nickFrom.equals(nickDest)) {
+            if (from.getNick().equals(nickDest)) {
                 if (c.getNick().equals(nickDest)) {
-                    c.sendMsg("Личное сообщение от " + nickFrom + " " + message[1] + ": " + message[2]);
+                    c.sendMsg("Личное сообщение от " + from.getNick() + " " + message[1] + ": " + message[2]);
                     break;
                 }
             }
             if (c.getNick().equals(nickDest)) {
-                c.sendMsg("Личное сообщение от " + nickFrom + " " + message[1] + ": " + message[2]);
+                if(!c.checkForBl(from.getNick())) c.sendMsg("Личное сообщение от " + from.getNick() + " " + message[1] + ": " + message[2]);
             }
-            if (c.getNick().equals(nickFrom)) {
-                c.sendMsg("Личное сообщение от " + nickFrom + " " + message[1] + ": " + message[2]);
+            if (c.getNick().equals(from.getNick())) {
+                c.sendMsg("Личное сообщение от " + from.getNick() + " " + message[1] + ": " + message[2]);
             }
 
 
