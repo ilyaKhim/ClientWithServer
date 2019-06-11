@@ -25,14 +25,15 @@ public class MainServer {
             AuthService.connect();
 
 //            System.out.println(AuthService.getNiceByLoginAndPass("login1", "pass1"));
-            server = new ServerSocket(8001, 10);
+            server = new ServerSocket(8002, 10);
             System.out.println("Сервер запущен");
 
             while (true) {
                 socket = server.accept();
                 System.out.println("Клиент подключился");
                 new ClientHandler(socket, this);
-            }
+
+        }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -43,11 +44,15 @@ public class MainServer {
                 e.printStackTrace();
             }
 
+
+
+
             try {
                 server.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
             AuthService.disconnect();
         }
     }
@@ -59,6 +64,7 @@ public class MainServer {
 
     public void unsubscribe(ClientHandler client) {
         clients.remove(client);
+
     }
 
     public void broadcastMsg(ClientHandler from,String msg) {
@@ -67,7 +73,10 @@ public class MainServer {
                 o.sendMsg(msg);
 
         }
+        AuthService.addToChatLog(msg);
     }
+
+
 
 
 

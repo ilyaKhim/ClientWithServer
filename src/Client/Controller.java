@@ -1,8 +1,11 @@
 package Client;
+import Server.AuthService;
 import Server.ClientHandler;
 import Server.MainServer;
 
+import com.sun.xml.internal.bind.v2.TODO;
 import javafx.application.Platform;
+import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
@@ -11,10 +14,13 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Timer;
 
 
 public class Controller  {
@@ -55,7 +61,7 @@ public class Controller  {
     private boolean isAuthorized;
 
     final String IP_ADRESS = "localhost";
-    final int PORT = 8001;
+    final int PORT = 8002;
 
 
     public void setAuthorized(boolean isAuthorized){
@@ -75,6 +81,7 @@ public class Controller  {
         }
 
     }
+
 
 
     public void connect()  {
@@ -104,11 +111,15 @@ public class Controller  {
 
                             String str = in.readUTF();
                             if (str.equals("/serverClosed")){
+                                textArea.clear();
                                 break;
                             }
 
                             else textArea.appendText(str+"\n");
                         }
+                    } catch (EOFException e){
+                        textArea.clear();
+                        textArea.appendText("Вы были отключены ввиду бездействия(120 сек.)");
                     } catch (IOException e){
                         e.printStackTrace();
                     } finally {

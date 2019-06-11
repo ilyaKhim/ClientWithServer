@@ -3,13 +3,12 @@ package Server;
 import Client.Main;
 import Server.MainServer.*;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Vector;
 
 public class ClientHandler {
 
@@ -20,6 +19,7 @@ public class ClientHandler {
     public String nick;
     private List<String> blackList;
 
+
     public ClientHandler(Socket socket, MainServer server){
         try{
             this.socket = socket;
@@ -29,11 +29,13 @@ public class ClientHandler {
             this.blackList = new ArrayList<>();
 
 
+
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try{
                         while (true){
+
                             String str = in.readUTF();
                             if(str.startsWith("/auth")){
                                 String[] tokens = str.split(" ");
@@ -54,13 +56,14 @@ public class ClientHandler {
                             }
 
                         }
-
                         String[] bl = AuthService.getBlByNick(nick).split(" ");
                         blackList.addAll(Arrays.asList(bl));
-                        System.out.println(blackList);
+                        for (int i = 0; i < AuthService.loadChatLog().size(); i++) {
+                            out.writeUTF(AuthService.loadChatLog().get(i));
+                        }
                         while (true){
+                            socket.setSoTimeout(120000);
                             String str = in.readUTF();
-//                            getNick();
                             if(str.startsWith("/")) {
                                 if (str.equals("/end")) {
                                     out.writeUTF("/serverClosed");
@@ -92,11 +95,11 @@ public class ClientHandler {
 
                             else  server.broadcastMsg(ClientHandler.this,"Client "+ nick+ ": " + str);
 
-
                         }
                     } catch (IOException e){
                         e.printStackTrace();
-                    } finally {
+
+                    } finally{
                         try{
                             in.close();
                         } catch (IOException e){
@@ -114,6 +117,7 @@ public class ClientHandler {
                         }
                         server.unsubscribe(ClientHandler.this);
                         AuthService.disconnectUser(nick);
+
 
                     }
                 }
@@ -134,9 +138,10 @@ public class ClientHandler {
         return blackList.contains(nick);
     }
 
-    public void sendMsg(String msg){
-        try{
 
+    public void sendMsg(String msg){
+
+        try{
             out.writeUTF(msg);
         }catch (IOException e){
             e.printStackTrace();

@@ -3,10 +3,12 @@ package Server;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
 public class AuthService {
     private static Connection connection;
     private static Statement stat;
+    private static Vector<String> chatlog;
 
 
     public static void connect() throws SQLException {
@@ -20,29 +22,30 @@ public class AuthService {
         }
     }
 
-    public static String getNiceByLoginAndPass(String login, String pass){
-        String sql = String.format("SELECT nickname FROM main where login = '%s' and password = '%s'", login, pass);
+    public static String getNiceByLoginAndPass(String login, String pass) {
+        int passHash = pass.hashCode();
+        String sql = String.format("SELECT nickname FROM main where login = '%s' and password = '%d'", login, passHash);
         try {
             ResultSet rs = stat.executeQuery(sql);
-            if(rs.next()){
+            if (rs.next()) {
                 return rs.getString(1);
             }
 
-        } catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    public static String getBlByNick(String nick){
-        String sql = String.format("SELECT bl FROM main where nickname = '%s'",nick);
-        try{
+    public static String getBlByNick(String nick) {
+        String sql = String.format("SELECT bl FROM main where nickname = '%s'", nick);
+        try {
             ResultSet rs = stat.executeQuery(sql);
-            if(rs.next()){
+            if (rs.next()) {
                 return rs.getString("bl");
 
             }
-        } catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return null;
@@ -50,8 +53,8 @@ public class AuthService {
 
     public static void addToBl(String nick, List<String> bl) {
         String nickToBl = "";
-        for(String s: bl){
-            nickToBl+=s+" ";
+        for (String s : bl) {
+            nickToBl += s + " ";
         }
         String sql = String.format("UPDATE main SET bl = '%s ' where nickname = '%s'", nickToBl, nick);
         try {
@@ -62,33 +65,35 @@ public class AuthService {
         }
     }
 
-    public static void connectUser(String nick){
+    public static void connectUser(String nick) {
         String sql = String.format("UPDATE main SET status = '1' where nickname = '%s'", nick);
-        try{
+        try {
             stat.executeUpdate(sql);
 
-        } catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-    public static void disconnectUser(String nick){
+
+    public static void disconnectUser(String nick) {
         String sql = String.format("UPDATE main SET status = '0' where nickname = '%s'", nick);
-        try{
+        try {
             stat.executeUpdate(sql);
 
-        } catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public static boolean isAlreadyAuth(String login, String pass){
-        String sql = String.format("SELECT status FROM main where login = '%s' and password = '%s'", login, pass);
-        try{
+    public static boolean isAlreadyAuth(String login, String pass) {
+        int passHash = pass.hashCode();
+        String sql = String.format("SELECT status FROM main where login = '%s' and password = '%d'", login, passHash);
+        try {
             ResultSet rs = stat.executeQuery(sql);
-            if(rs.next()){
+            if (rs.next()) {
                 return rs.getBoolean("status");
             }
-        } catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return true;
@@ -100,5 +105,32 @@ public class AuthService {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public static Vector<String> loadChatLog() {
+        chatlog = new Vector<>();
+        String sql = String.format("SELECT value FROM chatlog");
+        try {
+            ResultSet rs = stat.executeQuery(sql);
+            while (rs.next()) {
+                chatlog.add(rs.getString("value"));
+            }
+            return chatlog;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static void addToChatLog(String msg) {
+        try {
+            {
+                String sql = String.format("insert into chatlog (value) values ('%s')", msg);
+                stat.executeUpdate(sql);
+            }
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
+
     }
 }
