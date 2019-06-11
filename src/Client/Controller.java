@@ -61,7 +61,7 @@ public class Controller  {
     private boolean isAuthorized;
 
     final String IP_ADRESS = "localhost";
-    final int PORT = 8002;
+    final int PORT = 8003;
 
 
     public void setAuthorized(boolean isAuthorized){

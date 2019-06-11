@@ -107,15 +107,32 @@ public class AuthService {
         }
     }
 
-    public static Vector<String> loadChatLog() {
-        chatlog = new Vector<>();
-        String sql = String.format("SELECT value FROM chatlog");
+    public static int dbCounts(){
+        String sql = String.format("SELECT count(id) from chatlog");
         try {
             ResultSet rs = stat.executeQuery(sql);
-            while (rs.next()) {
-                chatlog.add(rs.getString("value"));
+            return rs.getInt(1);
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+
+    public static String loadChatLog() {
+        String answer ="";
+        try {
+            connection.setAutoCommit(false);
+            {
+                String sql = String.format("SELECT value FROM chatlog");
+                ResultSet rs = stat.executeQuery(sql);
+                while (rs.next()) {
+
+                    answer+=(rs.getString("value")+"\n");
+                }
             }
-            return chatlog;
+            connection.setAutoCommit(true);
+            return answer;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -124,10 +141,9 @@ public class AuthService {
 
     public static void addToChatLog(String msg) {
         try {
-            {
                 String sql = String.format("insert into chatlog (value) values ('%s')", msg);
                 stat.executeUpdate(sql);
-            }
+
         } catch (SQLException e){
             e.printStackTrace();
         }

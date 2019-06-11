@@ -25,7 +25,7 @@ public class MainServer {
             AuthService.connect();
 
 //            System.out.println(AuthService.getNiceByLoginAndPass("login1", "pass1"));
-            server = new ServerSocket(8002, 10);
+            server = new ServerSocket(8003, 10);
             System.out.println("Сервер запущен");
 
             while (true) {

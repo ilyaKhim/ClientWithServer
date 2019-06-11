@@ -2,6 +2,7 @@ package Server;
 
 import Client.Main;
 import Server.MainServer.*;
+import com.sun.istack.internal.Nullable;
 
 import java.io.*;
 import java.net.Socket;
@@ -58,9 +59,7 @@ public class ClientHandler {
                         }
                         String[] bl = AuthService.getBlByNick(nick).split(" ");
                         blackList.addAll(Arrays.asList(bl));
-                        for (int i = 0; i < AuthService.loadChatLog().size(); i++) {
-                            out.writeUTF(AuthService.loadChatLog().get(i));
-                        }
+                        out.writeUTF(AuthService.loadChatLog());
                         while (true){
                             socket.setSoTimeout(120000);
                             String str = in.readUTF();
